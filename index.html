@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Reaction Game</title>
+<style>
+  #game {
+    width: 500px;
+    height: 500px;
+    background: #eee;
+    margin: 20px auto;
+    position: relative;
+    border: 2px solid #333;
+  }
+  .target {
+    position: absolute;
+    cursor: pointer;
+  }
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  #startBtn {
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>Reaction Game</h2>
+
+<p>
+  Time: <span id="time">60</span> |
+  Score: <span id="score">0</span>
+</p>
+
+<button id="startBtn">Start Game</button>
+
+<div id="game"></div>
+
+<script>
+
+function getRandomColor() {
+  const colors = ["red", "blue", "green", "yellow", "purple", "orange", "pink"];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function playBeep() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.value = 500; 
+  osc.connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.1); 
+}
+
+let time = 60;
+let score = 0;
+let game = document.getElementById("game");
+let timerInterval;
+let spawnInterval;
+
+document.getElementById("startBtn").onclick = function() {
+  this.style.display = "none";
+  startGame();
+};
+
+function startGame() {
+  timerInterval = setInterval(() => {
+    time--;
+    document.getElementById("time").innerText = time;
+    if (time <= 0) endGame();
+  }, 1000);
+
+  spawnTarget();
+  spawnInterval = setInterval(spawnTarget, 3000);
+}
+
+function spawnTarget() {
+  let old = document.querySelector(".target");
+  if (old) old.remove();
+
+  let size = Math.floor(Math.random() * 60) + 20;
+  let x = Math.random() * (500 - size);
+  let y = Math.random() * (500 - size);
+
+  let t = document.createElement("div");
+  t.className = "target";
+
+  t.style.backgroundColor = getRandomColor();
+  t.style.width = size + "px";
+  t.style.height = size + "px";
+  t.style.left = x + "px";
+  t.style.top = y + "px";
+
+  t.onclick = function() {
+    playBeep();
+    score++;
+    document.getElementById("score").innerText = score;
+    t.remove();
+    spawnTarget();
+  };
+
+  game.appendChild(t);
+}
+
+function endGame() {
+  clearInterval(timerInterval);
+  clearInterval(spawnInterval);
+  alert("Game over! Score: " + score);
+  location.reload();
+}
+
+</script>
+
+</body>
+</html>
